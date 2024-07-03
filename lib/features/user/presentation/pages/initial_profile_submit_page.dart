@@ -4,12 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whatsapp_clone_flutter/features/app/const/app_const.dart';
 import 'package:whatsapp_clone_flutter/features/app/theme/style.dart';
+import 'package:whatsapp_clone_flutter/features/home/home_page.dart';
 import 'package:whatsapp_clone_flutter/features/user/presentation/widgets/account/next_button.dart';
 
 import '../../../app/global/widgets/profile_widget.dart';
 
 class InitialProfileSubmitPage extends StatefulWidget {
-  const InitialProfileSubmitPage({super.key});
+  final String phoneNumber;
+
+  const InitialProfileSubmitPage({
+    super.key,
+    required this.phoneNumber,
+  });
 
   @override
   State<InitialProfileSubmitPage> createState() =>
@@ -50,9 +56,9 @@ class _InitialProfileSubmitPageState extends State<InitialProfileSubmitPage> {
               child: Text(
                 "Profile Info",
                 style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
               ),
             ),
@@ -97,14 +103,25 @@ class _InitialProfileSubmitPageState extends State<InitialProfileSubmitPage> {
                 decoration: const InputDecoration(
                   hintText: "Username",
                   hintStyle: TextStyle(color: textColor),
-                  border:  InputBorder.none,
+                  border: InputBorder.none,
                 ),
               ),
             ),
             const SizedBox(
               height: 20,
             ),
-            NextButton(onPressed: (){}, title: "Next"),
+            NextButton(
+              onPressed: () {
+                /*Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HomePage(),
+                  ),
+                  (route) => false,
+                );*/
+              },
+              title: "Next",
+            ),
           ],
         ),
       ),

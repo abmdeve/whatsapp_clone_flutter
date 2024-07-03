@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pin_code_fields/flutter_pin_code_fields.dart';
 import 'package:whatsapp_clone_flutter/features/app/theme/style.dart';
+import 'package:whatsapp_clone_flutter/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:whatsapp_clone_flutter/features/user/presentation/pages/initial_profile_submit_page.dart';
 import 'package:whatsapp_clone_flutter/features/user/presentation/widgets/account/next_button.dart';
 import 'package:whatsapp_clone_flutter/features/user/presentation/widgets/account/pin_code_widget.dart';
@@ -65,7 +67,8 @@ class _OtpPageState extends State<OtpPage> {
               ),
             ),
             NextButton(
-              onPressed: () {
+              onPressed: _submitSmsCode,
+              /*onPressed: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -73,12 +76,21 @@ class _OtpPageState extends State<OtpPage> {
                             const InitialProfileSubmitPage(),
                     ),
                 );
-              },
+              },*/
               title: "Next",
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _submitSmsCode() {
+    debugPrint("OTP CODE ${_otpController.text}");
+    if (_otpController.text.isNotEmpty) {
+      BlocProvider.of<CredentialCubit>(context)
+          .submitSmsCode(smsCode: _otpController.text,
+      );
+    }
   }
 }

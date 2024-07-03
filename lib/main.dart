@@ -1,9 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone_flutter/features/app/theme/style.dart';
+import 'package:whatsapp_clone_flutter/routes/on_generate_routes.dart';
 
 import 'features/app/splash/splash_screen.dart';
+import 'firebase_options.dart';
+import 'main_injection_container.dart' as di;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await di.init();
   runApp(const MyApp());
 }
 
@@ -19,9 +28,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData().copyWith(
         scaffoldBackgroundColor: backgroundColor,
         dialogBackgroundColor: appBarColor,
-        appBarTheme: const AppBarTheme(color: appBarColor),
+        appBarTheme: const AppBarTheme(
+          color: appBarColor,
+        ),
       ),
-      home: const SplashScreen(),
+      initialRoute: "/",
+      onGenerateRoute: OnGenerateRoutes.route,
+      routes: {
+        "/": (context) => const SplashScreen(),
+      },
     );
   }
 }

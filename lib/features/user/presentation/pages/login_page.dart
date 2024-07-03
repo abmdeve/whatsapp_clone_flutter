@@ -1,5 +1,13 @@
 import 'package:country_pickers/country.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:whatsapp_clone_flutter/features/app/const/app_const.dart';
+import 'package:whatsapp_clone_flutter/features/home/home_page.dart';
+import 'package:whatsapp_clone_flutter/features/user/presentation/cubit/auth/auth/auth_cubit.dart';
+import 'package:whatsapp_clone_flutter/features/user/presentation/cubit/auth/auth/auth_state.dart';
+import 'package:whatsapp_clone_flutter/features/user/presentation/cubit/credential/credential_cubit.dart';
+import 'package:whatsapp_clone_flutter/features/user/presentation/cubit/credential/credential_state.dart';
+import 'package:whatsapp_clone_flutter/features/user/presentation/pages/initial_profile_submit_page.dart';
 import 'package:whatsapp_clone_flutter/features/user/presentation/widgets/account/next_button.dart';
 import 'package:whatsapp_clone_flutter/features/app/theme/style.dart';
 
@@ -20,7 +28,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _phoneController = TextEditingController();
   static Country _selectedFilteredDialogCountry =
       CountryPickerUtils.getCountryByPhoneCode("242");
-  static String _countryCode = _selectedFilteredDialogCountry.phoneCode;
+  String _countryCode = _selectedFilteredDialogCountry.phoneCode;
+
+  String _phoneNumber = "";
 
   @override
   void dispose() {
@@ -31,6 +41,49 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<CredentialCubit, CredentialState>(
+      listener: (context, credentialListenerState) {
+        if (credentialListenerState is CredentialSuccess) {
+          BlocProvider.of<AuthCubit>(context).loggedIn();
+        }
+        if (credentialListenerState is CredentialFailure) {
+          toast("SOMETHING WENT WRONG");
+        }
+      },
+      builder: (context, credentialBuilderState) {
+        if (credentialBuilderState is CredentialLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (credentialBuilderState is CredentialPhoneAuthSmsCodeReceived) {
+          return const OtpPage();
+        }
+
+        if (credentialBuilderState is CredentialPhoneAuthProfileInfo) {
+          return InitialProfileSubmitPage(
+            phoneNumber: _phoneNumber,
+          );
+        }
+
+        if (credentialBuilderState is CredentialSuccess) {
+          return BlocBuilder<AuthCubit, AuthState>(
+              builder: (context, authState) {
+            if (authState is Authenticated) {
+              return HomePage(
+                uid: authState.uid,
+              );
+            }
+            return _bodyWidget();
+          });
+        }
+        return _bodyWidget();
+      },
+    );
+  }
+
+  _bodyWidget() {
     return Scaffold(
       body: Container(
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
@@ -70,10 +123,14 @@ class _LoginPageState extends State<LoginPage> {
 
             //TODO NEXT BUTTON FOR NAVIGATE TO OTP SCREEN
             NextButton(
-              onPressed: () {
+              onPressed: _submitVerifyPhoneNumber,
+              /*onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const OtpPage()));
-              },
+                    MaterialPageRoute(
+                        builder: (context) => const OtpPage(),
+                    ),
+                );
+              },*/
               title: "Next",
             ),
           ],
@@ -143,5 +200,17 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
+  }
+
+  void _submitVerifyPhoneNumber() {
+    if (_phoneController.text.isNotEmpty) {
+      _phoneNumber = "+$_countryCode${_phoneController.text}";
+      debugPrint("PHONE NUMBER $_phoneNumber");
+      BlocProvider.of<CredentialCubit>(context).submitVerifyPhoneNumber(
+        phoneNumber: _phoneNumber,
+      );
+    } else {
+      toast("ENTER YOUR PHONE NUMBER");
+    }
   }
 }
